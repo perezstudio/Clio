@@ -17,13 +17,25 @@ struct AppKitSplitView<Sidebar: View, Content: View>: NSViewRepresentable {
         splitView.isVertical = true
         splitView.dividerStyle = .thin
 
+        // Make split view transparent so materials work
+        splitView.wantsLayer = true
+        splitView.layer?.backgroundColor = .clear
+
         // Create sidebar container
         let sidebarHostingView = NSHostingView(rootView: sidebar())
         sidebarHostingView.autoresizingMask = [.width, .height]
 
+        // Configure sidebar view to be transparent
+        sidebarHostingView.wantsLayer = true
+        sidebarHostingView.layer?.backgroundColor = .clear
+
         // Create content container
         let contentHostingView = NSHostingView(rootView: content())
         contentHostingView.autoresizingMask = [.width, .height]
+
+        // Configure content view to be transparent (material is applied in SwiftUI)
+        contentHostingView.wantsLayer = true
+        contentHostingView.layer?.backgroundColor = .clear
 
         // Add views to split view
         splitView.addArrangedSubview(sidebarHostingView)

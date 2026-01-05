@@ -12,10 +12,16 @@ struct ContentAreaView: View {
     let selectedPage: Page?
 
     var body: some View {
-        if let page = selectedPage {
-            PageEditorView(page: page)
-        } else {
-            EmptyStateView()
+        ZStack {
+            // Opaque background
+            Color(nsColor: .controlBackgroundColor)
+                .ignoresSafeArea()
+
+            if let page = selectedPage {
+                PageEditorView(page: page)
+            } else {
+                EmptyStateView()
+            }
         }
     }
 }
@@ -38,7 +44,6 @@ struct EmptyStateView: View {
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(nsColor: .textBackgroundColor))
     }
 }
 
@@ -53,22 +58,30 @@ struct PageEditorView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                // Page header
-                PageHeaderView(page: page)
+            VStack(alignment: .leading, spacing: 0) {
+                // Page content with material background
+                VStack(alignment: .leading, spacing: 16) {
+                    // Page header
+                    PageHeaderView(page: page)
 
-                // Blocks
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(blocks, id: \.id) { block in
-                        BlockView(block: block)
+                    // Blocks
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(blocks, id: \.id) { block in
+                            BlockView(block: block)
+                        }
                     }
+                    .padding(.horizontal, 16)
                 }
-                .padding(.horizontal, 16)
+                .padding(.vertical, 24)
+                .frame(maxWidth: 800)
+                .frame(maxWidth: .infinity)
+                .background(Color(nsColor: .textBackgroundColor))
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 2)
+                .padding(24)
             }
-            .padding(.vertical, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color(nsColor: .textBackgroundColor))
         .onAppear {
             setupStore()
             loadBlocks()

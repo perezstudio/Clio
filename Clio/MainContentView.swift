@@ -23,5 +23,10 @@ struct MainContentView: View {
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
+        .configureWindow { window in
+            window?.isOpaque = false
+            window?.backgroundColor = .clear
+            window?.hasShadow = true
+        }
     }
 }

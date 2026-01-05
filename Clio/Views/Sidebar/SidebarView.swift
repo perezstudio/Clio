@@ -20,6 +20,7 @@ struct SidebarView: View {
     @State private var selectedWorkspace: Workspace?
     @State private var folders: [Folder] = []
     @State private var pages: [Page] = []
+    @State private var showCreateWorkspace = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,24 +30,40 @@ struct SidebarView: View {
                 selectedWorkspace: $selectedWorkspace
             )
             .frame(height: 52)
-            .background(Color(nsColor: .controlBackgroundColor))
 
             Divider()
 
-            // Navigation list
+            // Navigation list - fills remaining space
             NavigationListView(
                 folders: folders,
                 pages: pages,
                 selectedPage: $selectedPage
             )
+            .frame(maxHeight: .infinity)
+
+            Divider()
+
+            // Footer with workspace info and create button
+            SidebarFooterView(
+                selectedWorkspace: selectedWorkspace,
+                onCreateWorkspace: {
+                    showCreateWorkspace = true
+                }
+            )
+            .frame(height: 50)
         }
-        .background(Color(nsColor: .controlBackgroundColor))
+        .background(.ultraThinMaterial)
         .onAppear {
             setupStores()
             loadWorkspaces()
         }
         .onChange(of: selectedWorkspace) { _, _ in
             loadNavigationItems()
+        }
+        .sheet(isPresented: $showCreateWorkspace) {
+            CreateWorkspaceSheet(onSave: { name in
+                createWorkspace(name: name)
+            })
         }
     }
 
@@ -73,6 +90,13 @@ struct SidebarView: View {
             folders = []
             pages = pageStore.fetchAllPages()
         }
+    }
+
+    private func createWorkspace(name: String) {
+        guard let store = workspaceStore else { return }
+        _ = store.createWorkspace(name: name)
+        loadWorkspaces()
+        showCreateWorkspace = false
     }
 }
 
@@ -153,6 +177,7 @@ struct NavigationListView: View {
             }
         }
         .listStyle(.sidebar)
+        .scrollContentBackground(.hidden)
     }
 }
 
@@ -190,5 +215,76 @@ struct PageRow: View {
     var body: some View {
         Label(page.title, systemImage: "doc.text")
             .font(.system(size: 13))
+    }
+}
+
+// MARK: - Sidebar Footer View
+
+struct SidebarFooterView: View {
+    let selectedWorkspace: Workspace?
+    let onCreateWorkspace: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(selectedWorkspace?.name ?? "All Workspaces")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+
+                Text("\(selectedWorkspace == nil ? "All" : "Current") Workspace")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button(action: onCreateWorkspace) {
+                Image(systemName: "plus.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.accentColor)
+            }
+            .buttonStyle(.plain)
+            .help("Create Workspace")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Create Workspace Sheet
+
+struct CreateWorkspaceSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var workspaceName: String = ""
+    let onSave: (String) -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Create New Workspace")
+                .font(.headline)
+
+            TextField("Workspace Name", text: $workspaceName)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 300)
+
+            HStack(spacing: 12) {
+                Button("Cancel") {
+                    dismiss()
+                }
+                .keyboardShortcut(.escape)
+
+                Button("Create") {
+                    if !workspaceName.isEmpty {
+                        onSave(workspaceName)
+                        dismiss()
+                    }
+                }
+                .keyboardShortcut(.return)
+                .buttonStyle(.borderedProminent)
+                .disabled(workspaceName.isEmpty)
+            }
+        }
+        .padding(24)
+        .frame(width: 400, height: 180)
     }
 }

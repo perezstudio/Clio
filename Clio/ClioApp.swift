@@ -31,6 +31,7 @@ struct ClioApp: App {
             MainContentView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .edgesIgnoringSafeArea(.all)
+				.background(.clear)
         }
         .modelContainer(sharedModelContainer)
         .windowStyle(.hiddenTitleBar)
