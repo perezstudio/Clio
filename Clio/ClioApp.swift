@@ -12,7 +12,10 @@ import SwiftData
 struct ClioApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Workspace.self,
+            Folder.self,
+            Page.self,
+            Block.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -25,8 +28,16 @@ struct ClioApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainContentView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .edgesIgnoringSafeArea(.all)
         }
         .modelContainer(sharedModelContainer)
+        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unified(showsTitle: false))
+        .commands {
+            // Keep standard commands
+            CommandGroup(replacing: .newItem) { }
+        }
     }
 }
